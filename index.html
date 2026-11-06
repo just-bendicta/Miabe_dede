@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Constellation — Gilda</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500;1,9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --nuit: #05070d; --nuit2: #0e1424; 
+    --or: #e8b923; --or-doux: #f2d581; --or-eclat: #ffe89e;
+    --creme: #f2ede2; --gris: #7f849a;
+    --serif: 'Fraunces', serif; --sans: 'Inter', sans-serif;
+    box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  html, body { background: var(--nuit); color: var(--creme); font-family: var(--sans); overflow-x: hidden; }
+
+  /* BARRE DE PROGRESSION */
+  .progression {
+    position: fixed; top: 0; left: 0; height: 3px; width: 0%; z-index: 60;
+    background: linear-gradient(90deg, var(--or), var(--or-eclat));
+    box-shadow: 0 0 15px rgba(232, 185, 35, .8);
+  }
+
+  /* PARTICULES */
+  .particules { position: fixed; inset: 0; pointer-events: none; z-index: 1; overflow: hidden; }
+  .p { position: absolute; border-radius: 50%; background: var(--or-doux); animation: scintille ease-in-out infinite; }
+  @keyframes scintille { 0%, 100% { opacity: .12; } 50% { opacity: .85; } }
+
+  section { min-height: 100vh; position: relative; display: flex; align-items: center; justify-content: center; padding: 80px 24px; }
+
+  /* HERO ÉPURÉ */
+  .hero { flex-direction: column; text-align: center; z-index: 2; }
+  .hero .prenom {
+    font-family: var(--serif); font-weight: 700; font-size: clamp(4.5rem, 18vw, 11rem);
+    color: var(--or-doux); margin: 0; letter-spacing: -.02em; line-height: .95;
+    text-shadow: 0 0 70px rgba(232, 185, 35, .35), 0 0 140px rgba(232, 185, 35, .15); z-index: 2;
+  }
+  .hero .prenom .lettre { display: inline-block; opacity: 0; transform: translateY(40px); transition: opacity .8s ease, transform .8s cubic-bezier(.2, .7, .2, 1.1); }
+  .hero .prenom .lettre.visible { opacity: 1; transform: translateY(0); }
+  .hero .signature { width: 0; height: 1.5px; margin: 30px auto 0; background: linear-gradient(90deg, transparent, var(--or) 25%, var(--or-eclat) 50%, var(--or) 75%, transparent); transition: width 1.2s cubic-bezier(.2, .7, .2, 1); }
+  .hero .signature.visible { width: min(320px, 60vw); }
+
+  .scroll-cue { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); color: var(--gris); font-size: .7rem; display: flex; flex-direction: column; align-items: center; gap: 8px; opacity: 0; animation: app 1s ease forwards 2.4s; }
+  @keyframes app { to { opacity: 1; } }
+  .scroll-cue .trait { width: 1px; height: 34px; background: linear-gradient(var(--or), transparent); animation: tire 1.8s ease-in-out infinite; }
+  @keyframes tire { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(.5); } }
+
+  /* OUVERTURE ÉTOILE FILANTE */
+  .filante-impact { position: fixed; top: 95vh; left: 95vw; width: 4px; height: 4px; background: #fff; border-radius: 50%; z-index: 80; pointer-events: none; box-shadow: 0 0 18px 4px rgba(242, 213, 129, 1), 0 0 44px 12px rgba(232, 185, 35, .6); animation: impact .85s cubic-bezier(.7, 0, .85, .15) forwards; }
+  .filante-impact::after { content: ''; position: absolute; top: 50%; right: 0; width: 280px; height: 2px; background: linear-gradient(90deg, rgba(255, 255, 255, .95), rgba(242, 213, 129, .55) 40%, transparent); transform: translateY(-50%) rotate(45deg); transform-origin: right center; }
+  @keyframes impact { 0% { transform: translate(0, 0) scale(.5); opacity: .7; } 70% { opacity: 1; } 100% { transform: translate(-45vw, -45vh) scale(1.5); opacity: 1; } }
+  .voile { position: fixed; inset: 0; z-index: 90; pointer-events: none; opacity: 0; background: #000; }
+  .voile.blanc { opacity: 1; background: #fff; transition: none; }
+  .voile.noir { opacity: 1; background: #000; transition: none; }
+  .voile.efface { opacity: 0; transition: opacity .4s ease; }
+
+  /* COMPTEUR ÉPURÉ */
+  .compteur { flex-direction: column; text-align: center; z-index: 2; }
+  .compteur::after { content: ''; position: absolute; top: 50%; left: 50%; width: 600px; height: 600px; transform: translate(-50%, -50%); border-radius: 50%; z-index: -1; pointer-events: none; background: radial-gradient(circle, rgba(232, 185, 35, .16), rgba(232, 185, 35, .05) 45%, transparent 70%); animation: nebuleuse 5s ease-in-out infinite; }
+  @keyframes nebuleuse { 0%, 100% { opacity: .6; transform: translate(-50%, -50%) scale(1); } 50% { opacity: 1; transform: translate(-50%, -50%) scale(1.15); } }
+  .compteur .nombre { font-family: var(--serif); font-weight: 700; font-size: clamp(3.5rem, 15vw, 9rem); color: var(--or-eclat); line-height: 1; text-shadow: 0 0 80px rgba(232, 185, 35, .5); opacity: 0; transform: scale(.85); transition: opacity 1s ease, transform 1s cubic-bezier(.2, .8, .3, 1.3); }
+  .compteur .nombre.visible { opacity: 1; transform: scale(1); }
+
+  /* MOMENTS (Carrés Animés) */
+  .moment { max-width: 1000px; margin: 0 auto; width: 100%; display: flex; align-items: center; gap: 60px; z-index: 2; padding: 60px 24px; }
+  .moment.droite { flex-direction: row-reverse; }
+  .moment .texte-bloc { flex: 1; min-width: 0; }
+  .moment .phrase { font-family: var(--serif); font-style: italic; font-weight: 500; font-size: clamp(1.4rem, 3.5vw, 2.2rem); line-height: 1.45; color: var(--creme); opacity: 0; transform: translateY(20px); transition: opacity .9s ease, transform .9s ease; text-shadow: 0 4px 15px rgba(0,0,0,0.8); }
+  .moment .phrase.visible { opacity: 1; transform: translateY(0); }
+  
+  .moment-carte { flex: 0 0 auto; width: min(320px, 85vw); opacity: 0; transform: scale(.75) rotate(var(--rot, 0deg)); transition: opacity .9s ease, transform .9s ease; cursor: zoom-in; }
+  .moment-carte.visible { opacity: 1; transform: scale(1) rotate(var(--rot, 0deg)); }
+  .moment-carte:hover { transform: scale(1.05) rotate(0deg) !important; z-index: 10; }
+  
+  .moment-carte .cadre { 
+    background: linear-gradient(165deg, #1a2234, #0a0e1a); padding: 4px; border-radius: 12px; 
+    box-shadow: 0 25px 60px rgba(0, 0, 0, .8), 0 0 0 1px rgba(232, 185, 35, .5); 
+    animation: levitation 6s ease-in-out infinite alternate;
+  }
+  @keyframes levitation { 0% { transform: translateY(0px); } 100% { transform: translateY(-15px); } }
+
+  .moment-carte .media { width: 100%; aspect-ratio: 1/1; border-radius: 10px; overflow: hidden; position: relative; background: #0a0e1a; }
+  .moment-carte .media img { width: 100%; height: 100%; object-fit: cover; animation: mvtInterne 15s linear infinite alternate; }
+  @keyframes mvtInterne { 0% { transform: scale(1) translate(0, 0); } 100% { transform: scale(1.15) translate(-2%, -2%); } }
+  @media (max-width: 760px) { .moment, .moment.droite { flex-direction: column; text-align: center; gap: 35px; } }
+
+  /* GALERIE PÊLE-MÊLE COMPACTE */
+  .galerie { flex-direction: column; z-index: 2; max-width: 950px; margin: 0 auto; text-align: center; padding: 120px 24px; }
+  .tas-galerie { position: relative; height: 420px; width: 100%; max-width: 700px; margin: 0 auto; }
+  .photo-tas { position: absolute; background: linear-gradient(165deg, #1a2234, #0a0e1a); padding: 3px; border-radius: 10px; box-shadow: 0 20px 45px rgba(0, 0, 0, .7), 0 0 0 1px rgba(232, 185, 35, .5); opacity: 0; transition: all .6s ease; animation: deriveTas 7s ease-in-out infinite; cursor: zoom-in; }
+  .photo-tas.visible { opacity: 1; }
+  .photo-tas:hover { transform: scale(1.25) rotate(0deg) !important; z-index: 30 !important; box-shadow: 0 35px 70px rgba(0,0,0,.9), 0 0 40px rgba(232, 185, 35, .5); animation: none; }
+  @keyframes deriveTas { 0%, 100% { margin-top: 0px; } 50% { margin-top: -12px; } }
+  .photo-tas .in { width: 100%; height: 100%; border-radius: 8px; overflow: hidden; background: #0a0e1a; display: flex; align-items: center; justify-content: center; }
+  .photo-tas .in img { width: 100%; height: 100%; object-fit: cover; }
+  @media (max-width: 760px) { .tas-galerie { height: 350px; max-width: 100%; } }
+
+  /* CONSTELLATION ORGANIQUE ET RESSERRÉE */
+  .ciel-zone { position: relative; width: 100%; z-index: 2; }
+  .ciel { position: relative; max-width: 850px; margin: 0 auto; padding: 20px 0 100px; }
+  .fil-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; z-index: 1; }
+  .fil-svg path { fill: none; stroke: url(#gradFil); stroke-width: 2.2; filter: drop-shadow(0 0 12px rgba(232, 185, 35, .9)); transition: stroke-dashoffset 0.1s ease-out; }
+
+  .etoile { position: absolute; overflow: hidden; z-index: 3; cursor: zoom-in; box-shadow: 0 0 0 2px rgba(232, 185, 35, .6), 0 15px 40px rgba(0, 0, 0, .9); opacity: 0; transform: scale(.4); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s ease; }
+  
+  /* Formes organiques variées */
+  .forme-1 { border-radius: 50%; }
+  .forme-2 { border-radius: 41% 59% 43% 57% / 46% 41% 59% 54%; }
+  .forme-3 { border-radius: 59% 41% 56% 44% / 37% 53% 47% 63%; }
+  .forme-4 { border-radius: 20px; } 
+  .forme-5 { border-radius: 47% 53% 38% 62% / 59% 45% 55% 41%; }
+  .forme-6 { border-radius: 32% 68% 57% 43% / 43% 39% 61% 57%; }
+
+  .etoile.visible { opacity: 1; transform: scale(1); animation: derive 6s ease-in-out infinite; }
+  .etoile:hover { transform: scale(1.15) !important; z-index: 20; box-shadow: 0 0 0 3px var(--or-eclat), 0 25px 60px rgba(0, 0, 0, 1), 0 0 50px rgba(232, 185, 35, .7); animation: none; }
+  .etoile .coeur { width: 100%; height: 100%; border-radius: inherit; overflow: hidden; background: #0c1222; position: relative; }
+  .etoile img { width: 100%; height: 100%; object-fit: cover; }
+  @keyframes derive { 0%, 100% { margin-top: 0px; } 50% { margin-top: -15px; } }
+
+  .etoile.video-bulle { cursor: pointer; box-shadow: 0 0 0 3px var(--or), 0 0 40px rgba(232, 185, 35, .5); animation: derive 6s ease-in-out infinite, pulsationBulle 2.2s ease-in-out infinite; }
+  @keyframes pulsationBulle { 0%, 100% { box-shadow: 0 0 0 2px var(--or), 0 0 35px rgba(232, 185, 35, .35); } 50% { box-shadow: 0 0 0 5px var(--or-eclat), 0 0 70px rgba(232, 185, 35, .8); } }
+  .etoile.video-bulle:hover { animation: none; }
+  .etoile.video-bulle .play { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(8, 11, 20, .4); color: var(--or-eclat); font-size: 2rem; pointer-events: none; transition: transform 0.3s ease; }
+  .etoile.video-bulle:hover .play { transform: scale(1.2); color: #fff; }
+
+  /* CHAPITRES CONSTELLATION */
+  .chapitre { position: absolute; left: 50%; transform: translate(-50%, 16px); width: min(480px, 85vw); text-align: center; z-index: 2; opacity: 0; transition: opacity 1s ease, transform 1s ease; pointer-events: none; }
+  .chapitre.visible { opacity: 1; transform: translate(-50%, 0); }
+  .chapitre .txt { font-family: var(--serif); font-style: italic; font-weight: 500; color: var(--creme); font-size: clamp(1.2rem, 3vw, 1.7rem); line-height: 1.45; text-shadow: 0 5px 25px rgba(0,0,0,1); }
+
+  /* =========================================================
+     NOUVEAU : PHOTO FINALE (Mise en exergue, Forme Arche)
+     ========================================================= */
+  .photo-finale-zone { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 60px 24px; z-index: 4; position: relative; }
+  
+  .carte-photo-finale { 
+    position: relative; width: min(400px, 85vw); aspect-ratio: 3/4; 
+    border-radius: 200px 200px 20px 20px; /* Forme Arche magnifique */
+    background: #05070d; cursor: zoom-in; 
+    box-shadow: 0 0 0 1.5px rgba(232, 185, 35, 0.5), 0 25px 60px rgba(0,0,0,1), 0 0 40px rgba(232, 185, 35, .2); 
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); 
+  }
+  .carte-photo-finale:hover { 
+    transform: translateY(-8px); 
+    box-shadow: 0 0 0 3px var(--or-eclat), 0 35px 80px rgba(0,0,0,1), 0 0 60px rgba(232, 185, 35, .4); 
+  }
+  .carte-photo-finale img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
+
+  /* =========================================================
+     ULTIME ÉCLAT : DERNIÈRE VIDÉO (Forme Amande/Feuille Animée)
+     ========================================================= */
+  .video-finale-zone { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 80px 24px 120px; z-index: 5; position: relative; }
+  
+  .carte-finale { 
+    position: relative; width: min(850px, 95vw); aspect-ratio: 16/10; 
+    border-radius: 200px 40px 200px 40px; /* Forme Feuille/Amande élégante */
+    background: #05070d; cursor: pointer; 
+    box-shadow: 0 0 0 2px rgba(232, 185, 35, 0.5), 0 35px 70px rgba(0,0,0,1), 0 0 70px rgba(232, 185, 35, .3); 
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); 
+  }
+  /* Halos vibrants épousant la forme de feuille */
+  .carte-finale::before, .carte-finale::after { 
+    content: ''; position: absolute; inset: -12px; 
+    border-radius: 212px 52px 212px 52px; 
+    border: 1.5px solid rgba(232, 185, 35, 0.35); z-index: -1; 
+    animation: pulseRing 3s linear infinite; 
+  }
+  .carte-finale::after { 
+    inset: -24px; border-radius: 224px 64px 224px 64px; 
+    border: 1.5px solid rgba(232, 185, 35, 0.15); animation-delay: 1.5s; 
+  }
+  @keyframes pulseRing { 0% { transform: scale(0.95); opacity: 0; } 50% { opacity: 1; } 100% { transform: scale(1.05); opacity: 0; } }
+  
+  .carte-finale:hover { transform: translateY(-8px) scale(1.02); box-shadow: 0 0 0 4px var(--or-eclat), 0 45px 90px rgba(0,0,0,1), 0 0 110px rgba(232, 185, 35, .6); }
+  .carte-finale .img-cover { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; opacity: 0.85; transition: opacity 0.4s ease; }
+  .carte-finale:hover .img-cover { opacity: 1; }
+  .carte-finale .play-geant { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 5rem; color: var(--or-eclat); filter: drop-shadow(0 0 25px rgba(0,0,0,0.9)); transition: transform 0.3s ease; }
+  .carte-finale:hover .play-geant { transform: scale(1.15); color: #fff; }
+
+  /* SUPERNOVA & CLÔTURE */
+  .cloture { flex-direction: column; text-align: center; z-index: 2; padding: 150px 24px; position: relative; }
+  .boum-zone { position: absolute; inset: 0; pointer-events: none; z-index: 3; overflow: visible; display: flex; align-items: center; justify-content: center; }
+  .onde { position: absolute; border: 2px solid rgba(232, 185, 35, .9); border-radius: 50%; width: 40px; height: 40px; transform: scale(0); opacity: .9; animation: onder 1.7s cubic-bezier(.15, .6, .25, 1) forwards; }
+  @keyframes onder { 0% { transform: scale(0); opacity: 1; } 70% { opacity: .4; } 100% { transform: scale(12); opacity: 0; } }
+  .rayons { position: absolute; width: 400px; height: 400px; background: conic-gradient(from 0deg, transparent 0deg, rgba(242, 213, 129, .6) 4deg, transparent 10deg, transparent 40deg, rgba(232, 185, 35, .45) 44deg, transparent 50deg, transparent 80deg, rgba(242, 213, 129, .55) 84deg, transparent 90deg, transparent 130deg, rgba(232, 185, 35, .4) 134deg, transparent 140deg, transparent 175deg, rgba(242, 213, 129, .55) 179deg, transparent 185deg, transparent 220deg, rgba(232, 185, 35, .45) 224deg, transparent 230deg, transparent 265deg, rgba(242, 213, 129, .55) 269deg, transparent 275deg, transparent 310deg, rgba(232, 185, 35, .45) 314deg, transparent 320deg); border-radius: 50%; transform: scale(0) rotate(0deg); opacity: 0; animation: rayonner 1.4s cubic-bezier(.15, .6, .3, 1) forwards; }
+  @keyframes rayonner { 0% { transform: scale(0) rotate(0deg); opacity: 0; } 20% { opacity: 1; } 100% { transform: scale(2.2) rotate(60deg); opacity: 0; } }
+  .flash { position: absolute; inset: -30%; border-radius: 50%; pointer-events: none; z-index: 2; background: radial-gradient(circle, rgba(242, 213, 129, .65), rgba(232, 185, 35, .15) 40%, transparent 70%); opacity: 0; animation: flasher 1.1s ease-out forwards; }
+  @keyframes flasher { 0% { opacity: 0; transform: scale(.3); } 25% { opacity: 1; } 100% { opacity: 0; transform: scale(1.8); } }
+  .cloture .msg { font-family: var(--serif); font-style: italic; font-weight: 600; font-size: clamp(2.3rem, 6.5vw, 4rem); color: var(--or-doux); max-width: 850px; line-height: 1.35; opacity: 0; transform: translateY(20px); transition: opacity 1s ease, transform 1s ease; position: relative; z-index: 4; text-shadow: 0 0 60px rgba(232,185,35,.4); }
+  .cloture .msg.visible { opacity: 1; transform: translateY(0); }
+  
+  /* ÉTOILES FILANTES RÉCURRENTES */
+  .filante { position: fixed; top: 0; left: 0; width: 3px; height: 3px; background: #fff; border-radius: 50%; z-index: 2; pointer-events: none; box-shadow: 0 0 14px 3px rgba(242, 213, 129, 1), 0 0 30px 8px rgba(232, 185, 35, .5); animation: filer 1.9s cubic-bezier(.1, .4, .2, 1) forwards; }
+  .filante::after { content: ''; position: absolute; top: 50%; right: 0; width: 260px; height: 2px; background: linear-gradient(90deg, rgba(255, 255, 255, .95), rgba(242, 213, 129, .6) 30%, transparent); transform: translateY(-50%); filter: blur(.3px); }
+  @keyframes filer { 0% { transform: translate(0, 0) scale(0); opacity: 0; } 5% { transform: translate(-20px, 14px) scale(1); opacity: 1; } 100% { transform: translate(-620px, 440px) scale(1); opacity: 0; } }
+
+  /* VISIONNEUSE LIGHTBOX CINÉMA */
+  .lightbox { position: fixed; inset: 0; z-index: 200; background: rgba(3, 4, 8, .97); display: flex; align-items: center; justify-content: center; padding: 25px; opacity: 0; pointer-events: none; transition: opacity .35s ease; backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
+  .lightbox.ouvert { opacity: 1; pointer-events: auto; }
+  .lightbox-conteneur { position: relative; max-width: min(94vw, 1000px); max-height: 86vh; display: flex; align-items: center; justify-content: center; }
+  .lightbox img { max-width: 100%; max-height: 84vh; border-radius: 12px; box-shadow: 0 30px 80px rgba(0, 0, 0, 1), 0 0 0 1px rgba(232, 185, 35, .4); transform: scale(.94); transition: transform .3s cubic-bezier(0.16, 1, 0.3, 1); }
+  .lightbox.ouvert img { transform: scale(1); }
+  .lightbox video { display: none; max-width: 100%; max-height: 84vh; border-radius: 12px; background: #000; box-shadow: 0 30px 80px rgba(0, 0, 0, 1), 0 0 0 1px rgba(232, 185, 35, .4); }
+  .lightbox.mode-video video { display: block; }
+  .lightbox.mode-video img { display: none; }
+  .lightbox-btn { position: absolute; color: var(--or-doux); background: rgba(14, 20, 36, 0.9); border: 1px solid rgba(232, 185, 35, .5); border-radius: 50%; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all .25s ease; z-index: 220; }
+  .lightbox-btn:hover { background: var(--or); color: var(--nuit); transform: scale(1.1); }
+  .lightbox .fermer { top: 22px; right: 26px; font-size: 1.4rem; }
+  .lightbox .nav-btn.prev { left: 24px; font-size: 1.6rem; }
+  .lightbox .nav-btn.next { right: 24px; font-size: 1.6rem; }
+</style>
+</head>
+<body>
+
+<div class="progression" id="progression"></div>
+<div class="particules" id="particules"></div>
+
+<!-- 1. HERO SÉQUENCE OUVERTURE -->
+<section class="hero">
+  <div class="boum-zone" id="boumHero"></div>
+  <h1 class="prenom" id="nomHero">Gilda</h1>
+  <div class="signature" id="signature"></div>
+  <div class="scroll-cue"><span>scroll</span><span class="trait"></span></div>
+</section>
+
+<!-- 2. COMPTEUR (Exactement 349 JOURS) -->
+<section class="compteur">
+  <div class="nombre reveal" id="nombreJours">0 JOURS</div>
+</section>
+
+<!-- 3. MOMENTS PHARES (Animés et carrés) -->
+<div id="moments"></div>
+
+<!-- 4. GALERIE PÊLE-MÊLE COMPACTE (SANS SOUS-TITRE) -->
+<section class="galerie">
+  <div class="tas-galerie" id="tasGalerie"></div>
+</section>
+
+<!-- 5. LA CONSTELLATION ANIMÉE -->
+<section class="ciel-zone">
+  <div class="ciel" id="ciel">
+    <svg class="fil-svg" id="filSvg">
+      <defs>
+        <linearGradient id="gradFil" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#e8b923" stop-opacity="0.1"/>
+          <stop offset="20%" stop-color="#f2d581" stop-opacity=".95"/>
+          <stop offset="80%" stop-color="#e8b923" stop-opacity=".95"/>
+          <stop offset="100%" stop-color="#e8b923" stop-opacity="0.1"/>
+        </linearGradient>
+      </defs>
+      <path id="filPath"></path>
+    </svg>
+  </div>
+</section>
+
+<!-- 6. AVANT-DERNIÈRE PHOTO (Mise en exergue : Forme Arche) -->
+<section class="photo-finale-zone">
+  <div class="carte-photo-finale reveal" id="photoFinaleCarte" data-type="photo">
+    <img id="photoFinaleImg" src="" alt="Dernier souvenir">
+  </div>
+</section>
+
+<!-- 7. ULTIME ÉCLAT (Dernière vidéo : Forme Feuille/Amande Animée) -->
+<section class="video-finale-zone">
+  <div class="carte-finale reveal" id="videoFinaleCarte" data-type="video">
+    <img class="img-cover" id="videoFinaleImg" src="" alt="Vidéo Finale">
+    <div class="play-geant">▶</div>
+  </div>
+</section>
+
+<!-- 8. SUPERNOVA DE CLÔTURE -->
+<section class="cloture">
+  <div class="boum-zone" id="boumCloture"></div>
+  <p class="msg reveal">« Que chacune de tes prochaines années brille avec la force d'une galaxie entière. »</p>
+</section>
+
+<!-- VISIONNEUSE LIGHTBOX CINÉMA -->
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-btn fermer" id="btnFermer">✕</button>
+  <button class="lightbox-btn nav-btn prev" id="btnPrev">‹</button>
+  <button class="lightbox-btn nav-btn next" id="btnNext">›</button>
+  <div class="lightbox-conteneur">
+    <img id="lightboxImg" src="" alt="Aperçu photo">
+    <video id="lightboxVideo" controls playsinline></video>
+  </div>
+</div>
+
+<script>
+  // =========================================================================
+  // DONNÉES CLOUDINARY
+  // =========================================================================
+  const PHOTOS = [
+    "https://res.cloudinary.com/xxlhzys4/image/upload/v1793963323/photo2.jpg", 
+    "https://res.cloudinary.com/xxlhzys4/image/upload/v1793963320/photo1.jpg", 
+    "https://res.cloudinary.com/xxlhzys4/image/upload/v1793963327/photo3.jpg",
+    "https://res.cloudinary.com/xxlhzys4/image/upload/v1793963330/photo4.jpg",
+    "https://res.cloudinary.com/xxlhzys4/image/upload/v1793963333/photo5.jpg",
+    "https://res.cloudinary.com/xxlhzys4/image/upload/v1793963337/photo6.jpg",
+    "https://res.cloudinary.com/xxlhzys4/image/upload/v1793963340/photo7.jpg",
+    "https://res.cloudinary.com/xxlhzys4/image/upload/v1793963343/photo8.jpg",
+    "https://res.cloudinary.com/xxlhzys4/image/upload/v1793963347/photo9.jpg",
+    "https://res.cloudinary.com/xxlhzys4/image/upload/v1793963350/photo10.jpg",
+    "https://res.cloudinary.com/xxlhzys4/image/upload/v1793963354/photo11.jpg",
+    "https://res.cloudinary.com/xxlhzys4/image/upload/v1793963357/photo12.jpg",
+    "https://res.cloudinary.com/xxlhzys4/image/upload/v1793963361/photo13.jpg",
+    "https://res.cloudinary.com/xxlhzys4/image/upload/v1793963364/photo14.jpg",
+    "https://res.cloudinary.com/xxlhzys4/image/upload/v1793963368/photo15.jpg",
+    "https://res.cloudinary.com/xxlhzys4/image/upload/v1793963371/photo16.jpg",
+    "https://res.cloudinary.com/xxlhzys4/image/upload/v1793963375/photo17.jpg",
+    "https://res.cloudinary.com/xxlhzys4/image/upload/v1793963378/photo18.jpg",
+    "https://res.cloudinary.com/xxlhzys4/image/upload/v1793963382/photo19.jpg",
+    "https://res.cloudinary.com/xxlhzys4/image/upload/v1793963386/photo20.jpg",
+    "https://res.cloudinary.com/xxlhzys4/image/upload/v1793963389/photo21.jpg"
+  ];
+
+  const VIDEOS = [
+    "https://res.cloudinary.com/xxlhzys4/video/upload/v1793963474/video1.mp4",
+    "https://res.cloudinary.com/xxlhzys4/video/upload/v1793965764/video2.mp4",
+    "https://res.cloudinary.com/xxlhzys4/video/upload/v1793963508/video3.mp4",
+    "https://res.cloudinary.com/xxlhzys4/video/upload/v1793963523/video4.mp4",
+    "https://res.cloudinary.com/xxlhzys4/video/upload/v1793963531/video5.mp4"
+  ];
+
+  function clImg(url, w = 600) { return url.includes('/image/upload/') ? url.replace('/image/upload/', `/image/upload/w_${w},c_fill,q_auto,f_auto/`) : url; }
+  function clPoster(url, w = 600) { return url.includes('/video/upload/') ? url.replace('/video/upload/', `/video/upload/so_0,w_${w},c_fill,q_auto,f_auto/`).replace(/\.[^/.]+$/, '.jpg') : ''; }
+
+  const photosMoments = PHOTOS.slice(0, 4);      
+  const photosGalerie = PHOTOS.slice(4, 14);     
+  const photosCiel = PHOTOS.slice(14, 20);       // 6 photos pour la constellation (15 à 20)
+  const photoFinale = PHOTOS[20];                // 1 photo (la dernière, 21) pour l'avant-fin en arche
+  
+  const videosCiel = VIDEOS.slice(0, 4);         
+  const videoFinale = VIDEOS[4];                 
+
+  // =========================================================================
+  // PARTICULES & SÉQUENCE D'OUVERTURE
+  // =========================================================================
+  const zoneP = document.getElementById('particules');
+  for (let i = 0; i < 55; i++) {
+    const p = document.createElement('div'); p.className = 'p';
+    const s = Math.random() * 2 + 1; p.style.width = s + 'px'; p.style.height = s + 'px';
+    p.style.left = Math.random() * 100 + 'vw'; p.style.top = Math.random() * 100 + 'vh';
+    p.style.animationDuration = (3 + Math.random() * 5) + 's'; p.style.animationDelay = (Math.random() * 5) + 's';
+    zoneP.appendChild(p);
+  }
+
+  const nomHero = document.getElementById('nomHero');
+  const texteNom = nomHero.textContent;
+  nomHero.innerHTML = '';
+  [...texteNom].forEach((car, i) => {
+    const s = document.createElement('span'); s.className = 'lettre'; s.textContent = car;
+    s.style.transitionDelay = (i * 0.045) + 's'; nomHero.appendChild(s);
+  });
+  
+  const dureeLettres = texteNom.length * 0.045 + 0.6;
+
+  const voile = document.createElement('div'); voile.className = 'voile'; document.body.appendChild(voile);
+  setTimeout(() => {
+    const etoile = document.createElement('div'); etoile.className = 'filante-impact'; document.body.appendChild(etoile);
+    setTimeout(() => {
+      etoile.remove(); voile.classList.add('blanc');
+      setTimeout(() => {
+        voile.classList.remove('blanc'); voile.classList.add('noir');
+        setTimeout(() => {
+          voile.classList.remove('noir'); voile.classList.add('efface');
+          boum('boumHero');
+          nomHero.querySelectorAll('.lettre').forEach(l => l.classList.add('visible'));
+          setTimeout(() => document.getElementById('signature').classList.add('visible'), dureeLettres * 1000);
+        }, 90);
+      }, 70);
+    }, 850);
+  }, 300);
+
+  // =========================================================================
+  // COMPTEUR (Exactement 349 JOURS)
+  // =========================================================================
+  const elNombre = document.getElementById('nombreJours');
+  const joursTotal = 349;
+  let compteurLance = false;
+  function lancerCompteur() {
+    if (compteurLance) return; compteurLance = true;
+    let debut = performance.now();
+    function tick(t) {
+      const p = Math.min(1, (t - debut) / 1800);
+      elNombre.textContent = Math.floor(p * joursTotal) + ' JOURS';
+      if (p < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  // =========================================================================
+  // 1. MOMENTS (Format Carré 1/1 et Animé)
+  // =========================================================================
+  const textesMoments = [
+    "La ou tout a commencé.",
+    "Un instant gardé précieusement, à raconter avec tes mots.",
+    "Ce souvenir qui fait encore sourire quand on y repense.",
+    "Et celui-là, tout frais, déjà précieux."
+  ];
+  const zoneMoments = document.getElementById('moments');
+  const rotMoments = [-6, 5, -4, 6];
+  photosMoments.forEach((photo, i) => {
+    const sec = document.createElement('section');
+    sec.className = 'moment ' + (i % 2 === 0 ? 'gauche' : 'droite');
+    sec.innerHTML = `
+      <div class="texte-bloc"><p class="phrase reveal">« ${textesMoments[i]} »</p></div>
+      <div class="moment-carte reveal" style="--rot:${rotMoments[i % 4]}deg" data-media-url="${photo}" data-type="photo">
+        <div class="cadre" style="animation-delay: ${i*0.4}s">
+          <div class="media">
+            <img src="${clImg(photo, 600)}" alt="Moment précieux">
+          </div>
+        </div>
+      </div>
+    `;
+    zoneMoments.appendChild(sec);
+  });
+
+  // =========================================================================
+  // 2. GALERIE PÊLE-MÊLE COMPACTE
+  // =========================================================================
+  const tasGalerie = document.getElementById('tasGalerie');
+  const positionsGalerie = [
+    { top: '15%', left: '15%', r: -12, t: 150 }, { top: '5%',  left: '32%', r: 6,   t: 185 },
+    { top: '20%', left: '48%', r: -5,  t: 160 }, { top: '10%', left: '65%', r: 12,  t: 175 },
+    { top: '25%', left: '80%', r: -8,  t: 140 }, { top: '45%', left: '20%', r: 8,   t: 165 },
+    { top: '52%', left: '38%', r: -10, t: 155 }, { top: '42%', left: '55%', r: 4,   t: 195 },
+    { top: '55%', left: '72%', r: -7,  t: 150 }, { top: '35%', left: '85%', r: 9,   t: 135 }
+  ];
+  photosGalerie.forEach((photo, i) => {
+    const pos = positionsGalerie[i];
+    const d = document.createElement('div');
+    d.className = 'photo-tas reveal';
+    d.style.top = pos.top; d.style.left = pos.left; d.style.width = pos.t + 'px'; d.style.aspectRatio = '4/5';
+    d.style.transform = `rotate(${pos.r}deg)`; d.style.animationDelay = (i * 0.2) + 's';
+    d.dataset.mediaUrl = photo; d.dataset.type = 'photo'; 
+    d.innerHTML = `<div class="in"><img src="${clImg(photo, 450)}" alt="Souvenir"></div>`;
+    tasGalerie.appendChild(d);
+  });
+
+  // =========================================================================
+  // 3. CONSTELLATION COMPACTE AVEC FORMES ORGANIQUES (10 astres = 6 photos + 4 vidéos)
+  // =========================================================================
+  const ciel = document.getElementById('ciel');
+  const nConstellation = photosCiel.length + videosCiel.length; 
+  const taillesBase = [120, 160, 190, 130, 175, 140, 155];
+  
+  const posVideosCiel = new Set([2, 5, 7, 9]); 
+  const dispoCiel = [];
+  let phaseCiel = 0;
+
+  for (let i = 0; i < nConstellation; i++) {
+    phaseCiel += 0.85 + Math.random() * 0.25; 
+    const top = (i / (nConstellation - 1)) * 100;
+    const left = Math.max(15, Math.min(85, 50 + Math.sin(phaseCiel) * (30 + Math.random() * 8)));
+    dispoCiel.push({ top, left, t: taillesBase[i % taillesBase.length], isVideo: posVideosCiel.has(i) });
+  }
+
+  const hauteurCiel = Math.max(1000, nConstellation * 125);
+  ciel.style.height = hauteurCiel + 'px';
+
+  const centresCiel = [];
+  let idxP = 0, idxV = 0;
+
+  dispoCiel.forEach((d, i) => {
+    const classeForme = 'forme-' + ((i % 6) + 1);
+    
+    const e = document.createElement('div');
+    e.className = 'etoile ' + classeForme + (d.isVideo ? ' video-bulle' : '') + ' reveal';
+    
+    let w = d.t; let h = d.t; let br = '50%';
+    const typeForme = i % 5;
+    if (typeForme === 1) { w = d.t * 0.85; h = d.t * 1.15; br = '50% 50% 50% 50% / 60% 60% 40% 40%'; }
+    else if (typeForme === 2) { w = d.t * 1.25; h = d.t * 0.85; br = '50%'; }
+    else if (typeForme === 3) { w = d.t * 0.9; h = d.t * 1.1; br = '50% 50% 50% 50% / 40% 40% 60% 60%'; }
+    else if (typeForme === 4) { w = d.t * 0.85; h = d.t * 1.2; br = '50%'; }
+
+    e.style.width = w + 'px'; e.style.height = h + 'px'; e.style.borderRadius = br;
+    e.style.top = (d.top / 100 * hauteurCiel) + 'px'; e.style.left = `calc(${d.left}% - ${w / 2}px)`;
+    e.style.animationDelay = (Math.random() * 3) + 's';
+    
+    if (d.isVideo) {
+      const vidUrl = videosCiel[idxV++];
+      e.dataset.mediaUrl = vidUrl; e.dataset.type = 'video';
+      e.innerHTML = `<div class="coeur" style="border-radius: ${br};"><img src="${clPoster(vidUrl, 450)}" alt="Vidéo"><div class="play">▶</div></div>`;
+    } else {
+      const picUrl = photosCiel[idxP++];
+      e.dataset.mediaUrl = picUrl; e.dataset.type = 'photo';
+      e.innerHTML = `<div class="coeur" style="border-radius: ${br};"><img src="${clImg(picUrl, 450)}" alt="Souvenir"></div>`;
+    }
+    
+    ciel.appendChild(e);
+    centresCiel.push({ x: d.left / 100, y: (d.top / 100 * hauteurCiel) + (h / 2) });
+  });
+
+  const chapitres = [
+    
+  ];
+  chapitres.forEach((texte, i) => {
+    const posTop = ((i + 0.5) / chapitres.length) * hauteurCiel;
+    const c = document.createElement('div'); c.className = 'chapitre reveal';
+    c.style.top = posTop + 'px';
+    c.innerHTML = `<p class="txt">« ${texte} »</p>`;
+    ciel.appendChild(c);
+  });
+
+  const filPath = document.getElementById('filPath');
+  const filSvg = document.getElementById('filSvg');
+  let longueurFil = 0;
+  function dessinerFil() {
+    const w = ciel.clientWidth;
+    let d = '';
+    centresCiel.forEach((c, i) => { d += (i === 0 ? 'M' : 'L') + (c.x * w) + ',' + c.y + ' '; });
+    filPath.setAttribute('d', d);
+    filSvg.setAttribute('viewBox', `0 0 ${w} ${hauteurCiel}`);
+    filSvg.style.height = hauteurCiel + 'px';
+    longueurFil = filPath.getTotalLength();
+    filPath.style.strokeDasharray = longueurFil;
+    filPath.style.strokeDashoffset = longueurFil;
+  }
+  dessinerFil(); window.addEventListener('resize', dessinerFil);
+
+  // =========================================================================
+  // 4. AVANT-DERNIÈRE PHOTO (Forme Arche, élégante et plus petite)
+  // =========================================================================
+  const cartePhotoFinale = document.getElementById('photoFinaleCarte');
+  cartePhotoFinale.dataset.mediaUrl = photoFinale;
+  document.getElementById('photoFinaleImg').src = clImg(photoFinale, 800);
+
+  // =========================================================================
+  // 5. L'ULTIME ÉCLAT (Dernière vidéo, grande forme Feuille/Amande Animée)
+  // =========================================================================
+  const carteFinale = document.getElementById('videoFinaleCarte');
+  carteFinale.dataset.mediaUrl = videoFinale;
+  document.getElementById('videoFinaleImg').src = clPoster(videoFinale, 1000);
+
+  // =========================================================================
+  // ANIMATIONS AU SCROLL & CLÔTURE
+  // =========================================================================
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        if (e.target.id === 'nombreJours') lancerCompteur();
+      }
+    });
+  }, { threshold: .25 });
+  document.querySelectorAll('.reveal, .photo-tas').forEach(el => obs.observe(el));
+
+  function boum(zoneId) {
+    const zone = document.getElementById(zoneId); if (!zone) return;
+    const flash = document.createElement('div'); flash.className = 'flash'; zone.appendChild(flash);
+    const rayons = document.createElement('div'); rayons.className = 'rayons'; zone.appendChild(rayons);
+    for (let i = 0; i < 3; i++) {
+      const o = document.createElement('div'); o.className = 'onde'; o.style.animationDelay = (i * 0.18) + 's';
+      zone.appendChild(o); setTimeout(() => o.remove(), 2000);
+    }
+    setTimeout(() => { flash.remove(); rayons.remove(); }, 1800);
+  }
+  const obsCloture = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { boum('boumCloture'); obsCloture.disconnect(); } });
+  }, { threshold: .5 });
+  obsCloture.observe(document.getElementById('boumCloture'));
+
+  const barre = document.getElementById('progression');
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    barre.style.width = (h.scrollTop / (h.scrollHeight - h.clientHeight) * 100) + '%';
+    const rect = ciel.getBoundingClientRect();
+    const vh = window.innerHeight;
+    const fraction = Math.min(1, Math.max(0, (vh - rect.top) / (rect.height + vh * 0.2)));
+    filPath.style.strokeDashoffset = longueurFil * (1 - fraction);
+  });
+
+  function creerFilante() {
+    const f = document.createElement('div'); f.className = 'filante' + (Math.random() > .6 ? ' petite' : '');
+    f.style.top = (Math.random() * 45) + 'vh'; f.style.left = (55 + Math.random() * 35) + 'vw';
+    document.body.appendChild(f); setTimeout(() => f.remove(), 2000);
+  }
+  setInterval(creerFilante, 2800);
+
+  // =========================================================================
+  // VISIONNEUSE LIGHTBOX
+  // =========================================================================
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightboxImg');
+  const lightboxVideo = document.getElementById('lightboxVideo');
+  
+  let collectionMedias = [];
+  let indexCourant = 0;
+
+  function collecterMedias() {
+    collectionMedias = Array.from(document.querySelectorAll('[data-media-url]')).map(el => ({
+      url: el.dataset.mediaUrl, type: el.dataset.type
+    }));
+  }
+
+  function afficherMediaIndex(index) {
+    if (index < 0) index = collectionMedias.length - 1;
+    if (index >= collectionMedias.length) index = 0;
+    indexCourant = index;
+    const media = collectionMedias[indexCourant];
+
+    if (media.type === 'video') {
+      lightbox.classList.add('mode-video');
+      lightboxVideo.src = media.url; lightboxVideo.volume = 1.0; lightboxVideo.play().catch(() => {});
+    } else {
+      lightbox.classList.remove('mode-video');
+      lightboxVideo.pause(); lightboxVideo.removeAttribute('src');
+      lightboxImg.src = clImg(media.url, 1400);
+    }
+    lightbox.classList.add('ouvert');
+  }
+
+  function fermerLightbox() {
+    lightbox.classList.remove('ouvert', 'mode-video');
+    lightboxVideo.pause(); lightboxVideo.removeAttribute('src'); lightboxVideo.load();
+  }
+
+  document.addEventListener('click', (e) => {
+    const declencheur = e.target.closest('[data-media-url]');
+    if (declencheur) {
+      collecterMedias();
+      const idx = collectionMedias.findIndex(m => m.url === declencheur.dataset.mediaUrl);
+      afficherMediaIndex(idx !== -1 ? idx : 0);
+    } else if (e.target === lightbox || e.target.closest('#btnFermer')) {
+      fermerLightbox();
+    }
+  });
+
+  document.getElementById('btnNext').addEventListener('click', () => afficherMediaIndex(indexCourant + 1));
+  document.getElementById('btnPrev').addEventListener('click', () => afficherMediaIndex(indexCourant - 1));
+
+  document.addEventListener('keydown', (e) => {
+    if (!lightbox.classList.contains('ouvert')) return;
+    if (e.key === 'Escape') fermerLightbox();
+    if (e.key === 'ArrowRight') afficherMediaIndex(indexCourant + 1);
+    if (e.key === 'ArrowLeft') afficherMediaIndex(indexCourant - 1);
+  });
+</script>
+</body>
+</html>
